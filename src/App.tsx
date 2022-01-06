@@ -6,6 +6,7 @@ import LoginPage  from './pages/LoginPage';
 import MainPage from "./pages/MainPage";
 import AccountPage from "./pages/AccountPage";
 import AuthPage from "./pages/AuthPage";
+import AccountEditPage from "./pages/AccountEditPage";
 
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
           <Route path='/' element={<MainPage />} />
           <Route path='/account' element={<AccountPage />} />
           <Route path='/auth' element={<AuthPage/> } />
+          <Route path='/account/add' element={<AccountEditPage />} />
       </Routes>
     </Router>
   );

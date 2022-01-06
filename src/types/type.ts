@@ -1,5 +1,12 @@
 import React from "react";
 
-type Props = {
-    children?: React.ReactChild | React.ReactChild[]
+export type Account = {
+    id: number;
+    reason: string;
+    price: number;
+    income?: number;
+    outcome?: number;
+    balance: number;
+    note?: string;
+    date: Date;
 }

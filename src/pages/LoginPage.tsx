@@ -45,15 +45,14 @@ const LoginPage = () => {
         setInfo({ ...info, [e.target.name]: e.target.value })
     }
 
-    const Login = (accessToken: string, refreshToken: string) => {
-        dispatch(AuthModule.login(accessToken, refreshToken));
+    const Login = (accessToken: string, refreshToken: string, name: string, level: number) => {
+        dispatch(AuthModule.login(accessToken, refreshToken, name, level));
     }
 
     const onLoginClick = (e: React.MouseEvent<HTMLElement>) => {
         userAPI.getToken(info.username, info.password).then(res => {
-            Login(res.accessToken, res.refreshToken);
-
-            navigate('/');
+            Login(res['access-token'], res['refresh-token'], res['name'], res['level']);
+            navigate('/account');
         });
     }
 

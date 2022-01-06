@@ -1,7 +1,7 @@
 import axios from "axios";
 
 
-const API = axios.create({ baseURL: 'http://localhost:8000' });
+const API = axios.create({baseURL: 'http://localhost:8000'});
 
 const userAPI = {
     getToken: async (username: string, password: string) => {
@@ -26,19 +26,46 @@ const userAPI = {
         });
 
         return result.data;
-    }
-}
-
-const AccountAPI = {
-    getAccountInfo: async (accessToken?: string | null) => {
-        const result = await API.get('/account', {
-            headers: {
-                'access-token': accessToken as string
-            }
+    },
+    createUser: async (email: string, password: string, name: string) => {
+        const result = await API.post('/user', {
+            email,
+            password,
+            name
         });
 
         return result.data;
     }
 }
 
-export { userAPI, AccountAPI };
+const AccountAPI = {
+    getAccountInfo: async (accessToken?: string | null) => {
+        try {
+            const result = await API.get('/account', {
+                headers: {
+                    'access-token': accessToken as string
+                }
+            });
+
+            return result.data;
+        } catch (e: any) {
+            console.log(e.response)
+        }
+    },
+    createAccount: async (data: Record<string, any>, accessToken: string | null) => {
+        try {
+            await API.post('/account', {
+                ...data,
+                date: data.date.toISOString().slice(0, 10)
+            }, {
+                    headers: {
+                        'access-token': accessToken as string
+                    }
+                });
+        } catch (e: any) {
+            console.log(e.response.data)
+        }
+    }
+}
+
+export {userAPI, AccountAPI};

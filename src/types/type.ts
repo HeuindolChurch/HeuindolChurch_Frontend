@@ -10,3 +10,11 @@ export type Account = {
     note?: string;
     date: Date;
 }
+
+export interface AccountInfo {
+    id?: number;
+    reason?: string;
+    price?: number;
+    note?: string;
+    date?: Date;
+}

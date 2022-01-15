@@ -1,6 +1,5 @@
 import axios from "axios";
 
-
 const API = axios.create({baseURL: 'http://localhost:8000'});
 
 const userAPI = {
@@ -39,11 +38,44 @@ const userAPI = {
 }
 
 const AccountAPI = {
-    getAccountInfo: async (accessToken?: string | null) => {
+    getAccountInfo: async (date: string, accessToken?: string | null) => {
         try {
             const result = await API.get('/account', {
                 headers: {
                     'access-token': accessToken as string
+                },
+                params: {
+                    date
+                }
+            });
+
+            return result.data;
+        } catch (e: any) {
+            console.log(e.response)
+        }
+    },
+    getMonthAccountInfo: async (data: Record<string, any>, accessToken?: string | null) => {
+        const result = await API.get('/account', {
+            headers: {
+                'access-token': accessToken as string
+            },
+            params: {
+                monthly: true,
+                date: data.date
+            }
+        });
+
+        return result.data;
+    },
+    getAllMonthAccountInfo: async (accessToken?: string | null) => {
+        try {
+            const result = await API.get('/account', {
+                headers: {
+                    'access-token': accessToken as string
+                },
+                params: {
+                    monthly: true,
+                    entire: true
                 }
             });
 
@@ -56,16 +88,33 @@ const AccountAPI = {
         try {
             await API.post('/account', {
                 ...data,
-                date: data.date.toISOString().slice(0, 10)
+                date: data.date
             }, {
                     headers: {
                         'access-token': accessToken as string
                     }
                 });
         } catch (e: any) {
-            console.log(e.response.data)
+            console.log(e)
         }
     }
 }
 
-export {userAPI, AccountAPI};
+const InitAPI = {
+    initAccount: async (data: Record<string, any>, accessToken: string | null) => {
+        try {
+            await API.post('/init', {
+                ...data,
+                date: data.date.toISOString().slice(0, 10)
+            },{
+                headers: {
+                    'access-token': accessToken as string
+                }
+            });
+        } catch (e: any) {
+            console.log(e.response)
+        }
+    }
+}
+
+export {userAPI, AccountAPI, InitAPI};

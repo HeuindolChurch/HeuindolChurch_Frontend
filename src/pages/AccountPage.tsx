@@ -1,4 +1,5 @@
-import React, {useState, useEffect} from "react";
+import React, {useState, useEffect, useRef} from "react";
+import {useParams} from 'react-router-dom';
 import {useSelector, useDispatch} from 'react-redux';
 import Background from "../components/Background";
 import {
@@ -14,11 +15,10 @@ import {
     Paper,
     Stack
 } from '@mui/material';
-import {DataGrid, GridColDef, GridValueGetterParams} from '@mui/x-data-grid';
 import {AccountAPI} from '../API';
 import styled from 'styled-components';
-import {Account} from '../types/type';
-import {useNavigate} from "react-router-dom";
+import {useNavigate, useSearchParams} from "react-router-dom";
+import moment from "moment";
 
 const Main = styled(Card)`
   position: absolute;
@@ -47,7 +47,14 @@ const BtnStack = styled(Stack)`
 
 const AccountPage = () => {
     const [rows, setRows] = useState<{ [key: string]: any; }[]>();
+    const mountedRef = useRef(true);
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    const [date, setDate] = useState(
+        moment().startOf('month').add(1, 'day')
+    );
+
     const {
         accessToken,
         name,
@@ -59,11 +66,34 @@ const AccountPage = () => {
     }));
 
     useEffect(() => {
-        accessToken && AccountAPI.getAccountInfo(accessToken).then(res => {
-            console.log(res);
-            setRows(res);
-        });
-    }, [accessToken]);
+        console.log(date);
+        const fetch = async () => {
+            const info = await AccountAPI.getAllMonthAccountInfo(accessToken);
+            if (info.length === 0) {
+                mountedRef.current = false;
+                navigate('/init');
+            } else {
+                const bal = await AccountAPI.getMonthAccountInfo({
+                    date: date.toISOString(true).split('T')[0]
+                }, accessToken);
+
+                const rows = await AccountAPI.getAccountInfo(date.toISOString().split('T')[0]!, accessToken);
+                if (bal !== null) {
+                    let temp = bal.balance;
+
+                    rows.map((elem: Record<string, any>) => {
+                        temp += elem['price'];
+                        elem['balance'] = temp;
+                        return elem;
+                    });
+                }
+
+                setRows(rows);
+            }
+        }
+
+        if (accessToken) fetch();
+    }, [accessToken, date]);
 
     return (
         <Background>
@@ -73,10 +103,11 @@ const AccountPage = () => {
                 </Typography>
                 <hr/>
                 <Content>
+                    <h3>{`${date.year()}년 ${date.month() + 1}월`}</h3>
                     <Name>{name}님, 환영합니다.</Name>
                     {
                         level > 2
-                        && <BtnStack direction='row' spacing={2} >
+                        && <BtnStack direction='row' spacing={2}>
                             <Button variant='contained' onClick={() => navigate('/account/add')}>추가</Button>
                             <Button variant='outlined'>수정</Button>
                         </BtnStack>
@@ -97,7 +128,15 @@ const AccountPage = () => {
                                 {
                                     rows !== undefined
                                     && rows.map(row => (
-                                        <TableRow key={row.id}>
+                                        <TableRow
+                                            key={row.id}
+                                            onClick={() => {
+                                                console.log(row);
+                                                if (level > 2) {
+                                                    navigate('/account/add', { state: row })
+                                                }
+                                            }}
+                                        >
                                             <TableCell component='th' scope='row'>
                                                 {row.date}
                                             </TableCell>
@@ -112,9 +151,20 @@ const AccountPage = () => {
                             </TableBody>
                         </Table>
                     </TableContainer>
-                    <BtnStack direction='row' spacing={1} >
-                        <Button variant='outlined'>이전 달</Button>
-                        <Button variant='contained'>다음 달</Button>
+                    <BtnStack direction='row' spacing={1}>
+                        <Button variant='outlined' onClick={() => {
+                            setDate(moment(date)
+                                .startOf('month')
+                                .subtract(1, 'month')
+                                .add(1, 'day')
+                            );
+                        }}>이전 달</Button>
+                        <Button variant='contained' onClick={() => {
+                            setDate(moment(date)
+                                .endOf('month')
+                                .add(1, 'day')
+                            );
+                        }}>다음 달</Button>
                     </BtnStack>
                 </Content>
             </Main>

@@ -52,7 +52,7 @@ const LoginPage = () => {
     const onLoginClick = (e: React.MouseEvent<HTMLElement>) => {
         userAPI.getToken(info.username, info.password).then(res => {
             Login(res['access-token'], res['refresh-token'], res['name'], res['level']);
-            navigate('/account');
+            navigate(`/account?date=${new Date().toISOString().split('T')[0]}`);
         });
     }
 
